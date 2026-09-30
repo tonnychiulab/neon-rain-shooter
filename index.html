@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2D 字雨射擊</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23080b17%22/><text x=%2250%22 y=%2265%22 font-family=%22monospace%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22%238bf5d5%22 text-anchor=%22middle%22>2D</text></svg>">
+</head>
+<body>
+    <main>
+        <header>
+            <div class="brand">
+                <div class="brand-title">2D</div>
+                <div class="brand-subtitle">字雨射擊</div>
+            </div>
+            <div class="hud">
+                <div class="hud-item">
+                    <div class="hud-label">SCORE</div>
+                    <div class="hud-value" id="scoreVal">00000</div>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-label">COMBO</div>
+                    <div class="hud-value" id="comboVal">×0</div>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-label">LIVES</div>
+                    <div class="hud-value lives" id="livesVal">●●●●●</div>
+                </div>
+                <button class="pause-btn" id="pauseBtn">暫停</button>
+            </div>
+        </header>
+
+        <div class="arena" id="arena">
+            <div class="arena-top-left">DROP ZONE</div>
+            <div class="arena-top-right">01 / INFINITE RAIN</div>
+            
+            <div id="game-container"></div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <div class="defense-line">防線 / 別讓字元穿過這裡</div>
+
+            <div class="overlay" id="overlay">
+                <div class="card" id="card">
+                    <div class="card-subtitle" id="cardSubtitle">TWO KEYS. ENDLESS RAIN.</div>
+                    <h1 id="cardTitle">接住這場<br><span class="mint">2D 字雨。</span></h1>
+                    <p class="card-desc" id="cardDesc">大小不一的繽紛字元，正在落下。<br>按對字元，讓它在落地前化成煙火。</p>
+                    <div class="keys-hint">
+                        <span class="key-cap">2</span> 擊落 2 &nbsp;&nbsp; <span class="key-cap">D</span> 擊落 D
+                    </div>
+                    <p class="card-note" id="cardNote">D 請用 Shift + D 或 Caps Lock。<br>滑鼠可點擊字元，也可使用下方射擊按鈕。<br><br><span style="color: #ffd700;">金色字元</span>帶有隨機增益；千萬別打<span style="color: #ff3333;">紅色的 X</span>！</p>
+                    <button class="start-btn" id="startBtn">開始射擊 ↗</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="controls">
+                <button class="fire-btn mint-btn" id="btnShoot2">
+                    <div class="btn-text">2</div>
+                    <div class="btn-sub">射擊 2 ↗</div>
+                </button>
+                <button class="fire-btn purple-btn" id="btnShootD">
+                    <div class="btn-text">D</div>
+                    <div class="btn-sub">射擊 D ↗</div>
+                </button>
+            </div>
+            <div class="footer-note">
+                只接受 2 / 大寫 D<br>
+                <span class="desktop-only">其他按鍵已在遊戲頁內攔截</span>
+            </div>
+        </footer>
+    </main>
+
+    <script src="phaser.min.js"></script>
+    <script src="model.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
