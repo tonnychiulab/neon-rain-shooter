@@ -1,3 +1,17 @@
+
+const CustomItems = [];
+const CustomKeys = new Set();
+
+if (typeof window !== 'undefined') {
+    window.GameAPI = {
+        registerItem: (config) => {
+            CustomItems.push(config);
+            if (config.key) {
+                CustomKeys.add(config.key.toUpperCase());
+            }
+        }
+    };
+}
 class GameModel {
     constructor() {
         this.mode = 'ready'; // ready, playing, paused, over
@@ -53,10 +67,22 @@ class GameModel {
 
         for (let i = this.items.length - 1; i >= 0; i--) {
             let item = this.items[i];
-            item.y += item.speed * activeDt;
+            if (item.type === 'custom' && item.customConfig.onUpdate) {
+                item.customConfig.onUpdate(item, activeDt);
+            } else {
+                item.y += item.speed * activeDt;
+            }
             
             if (item.y + item.size * 0.4 > h - 33) {
-                if (item.type === 'bomb') {
+                if (item.type === 'custom') {
+                    if (item.customConfig.onMiss) {
+                        item.customConfig.onMiss(this.getAPI());
+                    }
+                    this.items.splice(i, 1);
+                } else if (item.type === 'custom') {
+                    if (item.customConfig.onHit) item.customConfig.onHit(this.getAPI(), item);
+                    return { hit: true, item: item, customHit: true };
+                } else if (item.type === 'bomb') {
                     // Missed bomb is safe, just remove
                     this.items.splice(i, 1);
                 } else {
@@ -83,10 +109,24 @@ class GameModel {
         // Determine type: 10% golden, 10% bomb, 80% normal
         let typeRand = Math.random();
         let type = 'normal';
+        let customConfig = null;
+        
+        // Check custom items first
+        for (let itemConfig of CustomItems) {
+            if (Math.random() < (itemConfig.spawnChance || 0.05)) {
+                type = 'custom';
+                customConfig = itemConfig;
+                break;
+            }
+        }
+        
         let char = U < 0.5 ? '2' : 'D';
         let color = this.colors[Math.floor(Math.random() * 6)];
         
-        if (typeRand < 0.1) {
+        if (type === 'custom') {
+            char = customConfig.key || '?';
+            color = customConfig.color || '#ffffff';
+        } else if (typeRand < 0.1) {
             type = 'golden';
             color = '#ffd700'; // Gold
         } else if (typeRand < 0.2) {
@@ -109,8 +149,32 @@ class GameModel {
             color: color,
             speed: speed,
             angle: angle,
-            type: type
+            type: type,
+            customConfig: customConfig,
+            state: customConfig && customConfig.onSpawn ? customConfig.onSpawn() : {}
         });
+    }
+
+    
+    getAPI() {
+        return {
+            addScore: (pts) => { this.score += pts; },
+            addLife: (pts) => { this.lives = Math.min(5, this.lives + pts); },
+            loseLife: (pts) => { 
+                this.lives = Math.max(0, this.lives - pts); 
+                if(this.lives === 0) this.mode = 'over'; 
+            },
+            resetCombo: () => { this.combo = 0; },
+            addCombo: (pts) => { this.combo += pts; },
+            clearScreen: () => {
+                let normalItems = this.items.filter(i => i.type === 'normal' || i.type === 'golden');
+                this.score += normalItems.length * 10;
+                this.items = this.items.filter(i => i.type === 'bomb' || i.type === 'custom'); 
+            },
+            slowTime: (sec) => { this.buffTimeLeft = sec; },
+            showFeedback: (msg) => { if(typeof window !== 'undefined' && window.showFeedback) window.showFeedback(msg); },
+            shakeScreen: () => { if(typeof window !== 'undefined' && window.shakeScreen) window.shakeScreen(); }
+        };
     }
 
     applyBuff() {
@@ -169,6 +233,9 @@ class GameModel {
         let buffRes = null;
         if (hitItem.type === 'golden') {
             buffRes = this.applyBuff();
+        } else if (hitItem.type === 'custom' && hitItem.customConfig.onHit) {
+            hitItem.customConfig.onHit(this.getAPI(), hitItem);
+            return { hit: true, item: hitItem, customHit: true };
         }
         
         return { hit: true, item: hitItem, buff: buffRes };

@@ -199,6 +199,9 @@ function updateHUD() {
     DOM.pauseBtn.innerText = model.mode === 'paused' ? '繼續' : '暫停';
 }
 
+window.showFeedback = showFeedback;
+window.shakeScreen = () => { scene.cameras.main.shake(200, 0.01); };
+
 function showFeedback(msg) {
     DOM.feedback.innerText = msg;
     clearTimeout(feedbackTimeout);
@@ -215,7 +218,7 @@ function triggerBtnFeedback(char) {
 function executeShoot(char) {
     if (model.mode !== 'playing') return;
     let res = model.shoot(char);
-    if (char !== 'X') triggerBtnFeedback(char);
+    if (char === '2' || char === 'D') triggerBtnFeedback(char);
     if (res.hit) {
         handleHit(res.item);
         if (res.penalty) {
@@ -252,6 +255,8 @@ window.addEventListener('keydown', (e) => {
         showFeedback('請使用大寫 D：Shift + D 或 Caps Lock');
     } else if (e.key === 'X' || e.key === 'x') {
         executeShoot('X');
+    } else if (typeof CustomKeys !== 'undefined' && CustomKeys.has(e.key.toUpperCase())) {
+        executeShoot(e.key.toUpperCase());
     }
 }, true);
 

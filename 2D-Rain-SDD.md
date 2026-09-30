@@ -134,6 +134,17 @@ abs(pointer.y - item.y) < max(24, item.size * 0.65)
    - 若誤擊炸彈，會立即扣除 1 點生命且 Combo 歸零，並有螢幕震動與警告提示。
    - 若不理會炸彈任其落至防線外，則安全無事（不會扣命）。
 
+
+### 6.4 外掛道具包系統 (Plugin System)
+為支援團隊協作開發，主程式暴露 `window.GameAPI.registerItem(config)` 供獨立的 JavaScript 檔案註冊新道具。
+- **動態按鍵攔截**：若道具宣告 `key: 'S'`，系統會自動攔截 'S' 鍵並支援射擊判定。
+- **生命週期 Hooks**：
+  - `onSpawn()`：回傳自訂狀態。
+  - `onUpdate(item, dt)`：可覆寫掉落軌跡（如 S 型移動）。
+  - `onHit(api, item)`：擊落觸發。
+  - `onMiss(api)`：漏接觸發。
+- **API 封裝**：傳入的 `api` 參數提供安全的方法如 `api.addScore(pts)`、`api.addLife(pts)`、`api.showFeedback(msg)`、`api.shakeScreen()` 等，避免直接操作核心 Model。
+
 ## 7. 鍵盤攔截：必要需求
 
 在 window capture phase 監聽 `keydown`、`keyup`、`keypress`。對收到的每一事件呼叫 `preventDefault()`、`stopImmediatePropagation()`。阻止頁面滾動、Tab 移動焦點、Enter 啟動按鈕等頁面預設行為。
